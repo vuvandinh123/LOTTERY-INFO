@@ -54,30 +54,3 @@ function lottery_display_provinces()
 }
 add_shortcode('lottery_provinces', 'lottery_display_provinces');
 
-
-// Hàm tạo menu quản trị
-function my_custom_plugin_menu() {
-    // Tạo một trang quản trị mới
-    add_menu_page(
-        'Cài đặt xổ số',      // Tiêu đề trang
-        'Xổ số',         // Tiêu đề menu
-        'manage_options',        // Quyền yêu cầu
-        'my-custom-plugin',      // Slug của trang
-        'my_custom_plugin_page', // Hàm để hiển thị nội dung của trang
-        'dashicons-admin-generic', // Icon của menu
-        6                        // Vị trí của menu
-    );
-}
-
-// Nội dung của trang quản trị
-function my_custom_plugin_page() {
-    ?>
-    <div class="wrap">
-        <h1><?php esc_html_e( 'Trang Quản Trị Plugin', 'textdomain' ); ?></h1>
-        <p><?php esc_html_e( 'Đây là nội dung của trang quản trị plugin.', 'textdomain' ); ?></p>
-    </div>
-    <?php
-}
-
-// Hook vào action admin_menu để thêm menu vào trong trang quản trị
-add_action('admin_menu', 'my_custom_plugin_menu');
