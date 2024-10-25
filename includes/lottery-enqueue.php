@@ -4,9 +4,8 @@ if (!function_exists('li_lottery_info_enqueue_assets')) {
     {
         // Danh sách các file CSS
         $list_lottery_info_style = [
-            'bootstrap' => 'assets/css/bootstrap.min.css',
+            'li_main' => 'assets/css/li_main.css',
             'table' => 'assets/css/lottery_table.css',
-            'global' => 'assets/css/global.css',
             'flatpickr' => 'assets/css/flatpickr.min.css',
         ];
 
@@ -22,13 +21,19 @@ if (!function_exists('li_lottery_info_enqueue_assets')) {
         // Lặp qua từng file CSS trong danh sách
         foreach ($list_lottery_info_style as $id => $file) {
             $file_url = LOTTERY_INFO_URL . $file;
-            wp_enqueue_style($id, $file_url);
+            $file_path = LOTTERY_INFO_PATH . $file; // Đường dẫn file thật sự trên server
+            $version = file_exists($file_path) ? filemtime($file_path) : false;
+            wp_enqueue_style($id, $file_url, [], $version);
         }
+
         // Lặp qua từng file JS trong danh sách
         foreach ($list_lottery_info_script as $id => $file) {
             $file_url = LOTTERY_INFO_URL . $file;
-            wp_enqueue_script($id, $file_url, ['jquery'], false, true); // `true` để nạp ở footer
+            $file_path = LOTTERY_INFO_PATH . $file; // Đường dẫn file thật sự trên server
+            $version = file_exists($file_path) ? filemtime($file_path) : false;
+            wp_enqueue_script($id, $file_url, ['jquery'], $version, true); // `true` để nạp ở footer
         }
+
         // Truyền dữ liệu cho JavaScript
         wp_localize_script('main', 'my_custom_object', [
             'ajax_url' => admin_url('admin-ajax.php'),
@@ -38,4 +43,3 @@ if (!function_exists('li_lottery_info_enqueue_assets')) {
 
     add_action('wp_enqueue_scripts', 'li_lottery_info_enqueue_assets', 11);
 }
-

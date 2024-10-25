@@ -2,5 +2,8 @@
   background: #3131310e;
 }
 .hover-yellow:hover {
-  background: yellow;
+  background: rgb(255, 199, 46);
+}
+.hover-yellow{
+  transition: all 0.3s ease;
 }

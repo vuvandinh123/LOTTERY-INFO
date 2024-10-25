@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: Thống Kê Xổ Số
+Plugin Name: Thống Kê Xổ Số 2
 Plugin URI: https://vuvandinh.id.vn
 Description: Thống kê xổ số theo tỉnh thành.
-Version: 1.0
+Version: 1.1
 Author: Vũ Văn Định
 Author URI: https://vuvandinh.id.vn
 License: GPL2
@@ -34,7 +34,7 @@ add_action('wp_ajax_nopriv_lottery_api_call', 'lottery_api_call');
 function lottery_api_call()
 {
     // Kiểm tra nonce để bảo mật
-    // check_ajax_referer('my_custom_nonce', 'nonce');
+    check_ajax_referer('my_custom_nonce', 'nonce');
     $region = isset($_POST['region']) ? sanitize_text_field($_POST['region']) : 'mien-bac'; // Mặc định là 'mien-bac'
     $province = isset($_POST['province']) ? sanitize_text_field($_POST['province']) : '';
 
@@ -52,5 +52,5 @@ function lottery_display_provinces()
     require LOTTERY_INFO_PATH . 'templates/lottery-template.php';
     return ob_get_clean();
 }
-add_shortcode('lottery_provinces', 'lottery_display_provinces');
+add_shortcode('lottery_info', 'lottery_display_provinces');
 
