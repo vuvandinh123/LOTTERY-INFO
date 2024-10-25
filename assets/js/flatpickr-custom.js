@@ -52,18 +52,20 @@ const Vietnamese = {
     hourAriaLabel: "Giờ",
     minuteAriaLabel: "Phút"
 };
-function flatpickrCustom(validDays = [0, 1, 2, 3, 4, 5, 6], defaultDate = null, onChange = function () { },) {
+function flatpickrCustom({
+    defaultDate = null, validDays = [], onChange = function () { }, id = ""
+}) {
     const today = new Date();
     const defaultDateValue = defaultDate ? new Date(defaultDate) : today;
-    flatpickr("#date", {
+    flatpickr(id, {
         dateFormat: "Y-m-d", // Định dạng ngày tháng
         maxDate: today,
         defaultDate: new Date(defaultDateValue),
         locale: Vietnamese,
-        enable: [
+        disable: [
             function (date) {
                 // Chặn các ngày không thuộc validDays và chặn ngày trong tương lai
-                return !validDays.includes(date.getDay()) && date <= today;
+                return validDays.includes(date.getDay());
             }
         ],
         onChange: onChange

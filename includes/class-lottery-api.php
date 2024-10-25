@@ -4,14 +4,14 @@ class Lottery_API
 {
 
     // Hàm lấy thông tin xổ số từ API
-    public static function get_lottery_results($region = 'mien-bac', $province = '', $day = '') // Tham số mặc định là 'mien-bac'
+    public static function get_lottery_results($region = 'mien-bac', $province = '', $day = '')
     {
         $url = 'https://ketqua365.net/api/lotteries';
 
-        if (!empty($province)) {
-            $url .= '?province=' . $province;
-        } elseif (!empty($region)) {
+        if (!empty($region) && empty($province)) {
             $url .= '?region=' . $region;
+        } elseif (!empty($province)) {
+            $url .= '?province=' . $province;
         }
         if (!empty($day)) {
             $url .= '&day=' . $day;
@@ -36,8 +36,15 @@ class Lottery_API
     {
         $rank_name = ['Đặc biệt', 'Giải nhất', 'Giải nhì', 'Giải ba', 'Giải tư', 'Giải năm', 'Giải sáu', 'Giải bảy', 'Giải tám'];
         $result = [];
+
         foreach ($data as $item) {
-            $prize = $item['prize'];
+            $prize = (int) $item['prize'];
+
+            // Kiểm tra nếu prize nằm trong phạm vi hợp lệ của mảng rank_name
+            if ($prize < 0 || $prize >= count($rank_name)) {
+                continue; // Bỏ qua nếu prize không hợp lệ
+            }
+
             if (!isset($result[$prize])) {
                 $result[$prize] = [
                     'prize' => $prize,
@@ -45,10 +52,13 @@ class Lottery_API
                     'data' => []
                 ];
             }
+
             $result[$prize]['data'][] = $item;
         }
-        return $result;
+
+        return array_values($result);
     }
+
     public static function prepare_response($region, $province, $date)
     {
         $lotterys = self::get_lottery_results($region, $province, $date);
@@ -66,7 +76,9 @@ class Lottery_API
             'weekdays_result_lottery' => $weekdays_result_lottery,
             'prize_number_lotto' => $loto,
             'result_day' => $lotterys['result_day'],
+            'type' => $lotterys['type'],
             'province_name' => $lotterys['province']['name'],
+            'province_slug' => $lotterys['province']['slug'],
             'data' => $result
         ];
 

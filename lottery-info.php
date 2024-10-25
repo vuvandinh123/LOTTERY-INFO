@@ -23,8 +23,8 @@ require_once LOTTERY_INFO_PATH . 'includes/class-province-handler.php';
 function lottery_info_activate()
 {
     // Tạo bảng để lưu các tỉnh thành khi kích hoạt plugin.
-    Province_Handler::create_province_table();
-    Province_Handler::fetch_and_store_provinces();
+    // Province_Handler::create_province_table();
+    // Province_Handler::fetch_and_store_provinces();
 }
 register_activation_hook(__FILE__, 'lottery_info_activate');
 
@@ -45,9 +45,25 @@ function lottery_api_call()
     wp_die(); // Dừng việc thực thi
 }
 // Hàm lấy dữ liệu từ API
-function lottery_display_provinces()
+function lottery_display_provinces($atts)
 {
-    $provinces = Province_Handler::get_provinces();
+    $atts = shortcode_atts([
+        'default' => 'mien-bac',
+        'title' => 'Kết quả xổ số truyền thống',
+        'loto_hidden' => 0,
+        'limit' => 3,
+    ], $atts, 'lottery_info');
+    $title = sanitize_text_field($atts['title']);
+    $default = sanitize_text_field($atts['default']);
+    $loto_hidden = (int) sanitize_text_field($atts['loto_hidden']);
+    if ($default !== 'mien-bac' && $default !== 'mien-nam' && $default !== 'mien-trung') {
+        $default = 'mien-bac';
+    }
+    $provinces = [];
+    if ($default !== 'mien-bac') {
+        $provinces = Province_Handler::fetch_provinces($default);
+    }
+    $unique_id = uniqid();
     ob_start();
     require LOTTERY_INFO_PATH . 'templates/lottery-template.php';
     return ob_get_clean();
