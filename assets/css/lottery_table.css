@@ -4,6 +4,102 @@
 .hover-yellow:hover {
   background: rgb(255, 199, 46);
 }
-.hover-yellow{
+.hover-yellow {
   transition: all 0.3s ease;
+}
+.li_number-vietlott-content {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+}
+.li_number-vietlott {
+  display: flex;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  border: 5px solid red;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+/* Đặt kiểu chung cho bảng */
+.li_table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #212529;
+  border-collapse: collapse;
+}
+
+.li_table th,
+.li_table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #dee2e6;
+}
+
+/* Kiểu cho phần đầu bảng */
+.li_table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* Kiểu cho bảng có viền */
+.li_table-bordered {
+  border: 1px solid #dee2e6;
+}
+
+.li_table-bordered th,
+.li_table-bordered td {
+  border: 1px solid #dee2e6;
+}
+
+/* Kiểu cho bảng với hàng xen kẽ màu */
+.li_table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Kiểu cho bảng có đường kẻ ngang */
+.li_table-hover tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.075);
+}
+
+/* Kiểu cho bảng phản hồi kích thước màn hình */
+.li_table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* HTML: <div class="loader"></div> */
+.li_loader {
+  width: 50px;
+  aspect-ratio: 1;
+  display: grid;
+}
+.li_loader:before,
+.li_loader:after {
+  content: "";
+  grid-area: 1/1;
+  margin: 0 0 15px 15px;
+  --c:#0000 calc(100%/3),#046D8B 0 calc(2*100%/3),#0000 0;
+  --c1:linear-gradient(90deg,var(--c));
+  --c2:linear-gradient( 0deg,var(--c));
+  background: var(--c1),var(--c2),var(--c1),var(--c2);
+  background-size: 300% 4px,4px 300%;
+  background-repeat: no-repeat;
+  animation: l12 1s infinite linear;
+}
+.li_loader:after {
+  margin: 15px 15px 0 0;
+  transform: scale(-1,-1);
+}
+@keyframes l12 {
+  0%   {background-position: 50%  0,100% 100%,0    100%,0 0}
+  25%  {background-position: 0    0,100% 50% ,0    100%,0 0}
+  50%  {background-position: 0    0,100% 0   ,50%  100%,0 0}
+  75%  {background-position: 0    0,100% 0   ,100% 100%,0 50%}
+ 75.01%{background-position: 100% 0,100% 0   ,100% 100%,0 50%}
+  100% {background-position: 50%  0,100% 0   ,100% 100%,0 100%}
 }

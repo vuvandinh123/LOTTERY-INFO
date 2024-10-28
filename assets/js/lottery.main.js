@@ -2,143 +2,121 @@ jQuery(document).ready(function ($) {
     const { ajax_url, nonce } = my_custom_object;
     const today = new Date();
     const formattedDate = today.toISOString().slice(0, 10);
-
     $('.lottery-info-shortcode').each(function () {
-        let id = $(this).data('id');
-        const region = $('#result_btr-' + id).data('type');
-        let id_change = ["#province-select-" + id, "#date-" + id];
+        let unique_id = $(this).data('id');
+
+        const region = $('#result_btr-' + unique_id).data('type');
+        const provinceDefault = $('#result_btr-' + unique_id).data('province');
+        let id_change = ["#province-select-" + unique_id, "#date-" + unique_id];
         $(id_change.join(',')).on('change', function () {
             const provinceSlug = $(id_change[0]).val();
             const date = $(id_change[1]).val();
             $(id_change[1]).prop('disabled', true);
-            getLotteryResults({ provinceSlug, date, id, region });
+            getLotteryResults({ provinceSlug: provinceSlug || provinceDefault, date, unique_id, region });
         });
-        getLotteryResults({ provinceSlug: '', date: formattedDate, region, id });
+        getLotteryResults({ provinceSlug: provinceDefault, date: formattedDate, region, unique_id });
 
     });
 
-    function getLotteryResults({ provinceSlug = '', date = '', id = "", region = "" }) {
+    function getLotteryResults({ provinceSlug = '', date = '', unique_id = "", region = "" }) {
+        // variable dom
+        let _lottery_results = $('#lottery-results-' + unique_id)
+        let _show_date = $('#show-date-' + unique_id)
+        let _show_title = $('#li-title-' + unique_id)
+        let _show_select = $('#province-select-' + unique_id)
+        let _lottery_hidden = $('.lottery-table-hidden-' + unique_id)
+        let _lottery_table = $('#lottery-table-' + unique_id)
+        let _lottery_table_start = $('#lottery-table-start-' + unique_id)
+        let _lottery_table_end = $('#lottery-table-end-' + unique_id)
+        let _date = $('#date-' + unique_id)
+        let _li_content = $('#li_content-' + unique_id)
+        _li_content.addClass('li_d-none');
+        $('#li_loader-' + unique_id).removeClass('li_d-none');
         $.ajax({
-            url: ajax_url,  // URL được truyền từ PHP
+            url: ajax_url,
             type: 'POST',
             data: {
-                action: 'lottery_api_call',  // Tên action trong PHP để xử lý
-                nonce: nonce, // Nonce bảo mật
+                action: 'lottery_api_call',
+                nonce: nonce,
                 province: provinceSlug,
                 region: region || '',
                 date: date
             },
             success: function (response) {
                 const data = response['data'];
-                if (!data) {
+                if (!data ) {
                     console.log("Không có dữ liệu");
                     return
                 }
-                $('#show-date-' + id).text(formatDateString(data['result_day']));
-                if (region !== 'mien-bac') {
-                    $('#li-title-' + id).text('XỔ SỐ ' + data['province_name'])
-                    $('#province-select-' + id).val(data['province_slug'])
-                }
-                if (region === 'mien-bac') {
-                    flatpickrCustom({
-                        defaultDate: data['result_day'],
-                        id: '#date-' + id
-                    });
-                } else {
-                    flatpickrCustom({
-                        defaultDate: data['result_day'],
-                        id: '#date-' + id,
-                        validDays: data['weekdays_result_lottery'],
-                    });
-                }
-                // Hiển thị bảng kết quả xổ số
-                renderLotteryResults(data['data'], '#lottery-results-' + id);
-                // Hiển thị số loto
-                if (data['type'] === 'normal') {
-                    $('.lottery-table-hidden').removeClass('li_d-none');
-                    renderLotoNumber(data['prize_number_lotto'], '#lottery-table-' + id);
-                    // Hiển thị bảng số loto đầu và cuối
-                    const groupedNumbersStart = getLotoNumber(data['prize_number_lotto']);
-                    renderLotoNumberStartOrEnd(groupedNumbersStart, '#lottery-table-start-' + id);
+                // data
+                let data_result_day = data['result_day'];
+                let data_slug = data['province_slug'];
+                let data_type = data['type'];
+                let data_province_name = data['province_name'];
+                let data_validate_day = data['weekdays_result_lottery']
+                let data_prize_number_lotto = data['prize_number_lotto']
+                let data_render = data['data']
 
-                    const groupedNumbersEnd = getLotoNumber(data['prize_number_lotto'], 1);
-                    renderLotoNumberStartOrEnd(groupedNumbersEnd, '#lottery-table-end-' + id);
-                } else {
-                    $('.lottery-table-hidden').addClass('li_d-none');
+                _show_date.text(formatDateString(data_result_day));
+                if (region !== 'mien-bac') {
+                    _show_title.text('XỔ SỐ ' + data_province_name)
+                    _show_select.val(data_slug)
                 }
-                $('#date-' + id).prop('disabled', false);
+                // flatpickr
+                flatpickrCustom({
+                    defaultDate: data_result_day,
+                    id: '#date-' + unique_id,
+                    validDays: (function () {
+                        if (region === 'mien-bac') {
+                            return []
+                        } else if (region === 'Vietlott') {
+                            return [0, 1, 3, 5]
+                        }
+                        return data_validate_day
+                    })(),
+                });
+
+                // Hiển thị giao diện
+                if (data_slug === 'max-4-d') {
+                    renderLotteryMax4D(data_render, _lottery_results);
+                } else if (data_slug === 'mega-6-45' || data_slug === 'power-5-66') {
+                    renderVietlott(data_render, _lottery_results);
+                } else {
+                    renderLotteryResults(data_render, _lottery_results);
+                }
+                // Hiển thị số loto
+                if (data_type === 'normal' && region !== 'Vietlott') {
+
+                    _lottery_hidden.removeClass('li_d-none');
+                    renderLotoNumber(data_prize_number_lotto, _lottery_table);
+
+                    // Hiển thị bảng số loto đầu
+                    const groupedNumbersStart = getLotoNumber(data_prize_number_lotto);
+                    renderLotoNumberStartOrEnd(groupedNumbersStart, _lottery_table_start);
+
+                    // Hiển thị bảng số loto đuôi
+                    const groupedNumbersEnd = getLotoNumber(data_prize_number_lotto, 1);
+                    renderLotoNumberStartOrEnd(groupedNumbersEnd, _lottery_table_end);
+                } else {
+                    console.log(data_type);
+
+                    _lottery_hidden.addClass('li_d-none');
+                }
+                _date.prop('disabled', false);
+                // loading
+                _li_content.removeClass('li_d-none');
+                $('#li_loader-' + unique_id).addClass('li_d-none');
             },
             error: function (error) {
                 console.error('Error:', error);
+                _date.prop('disabled', false);
             }
         });
     }
-    function renderLotoNumber(loto, id) {
-        const container = $(id);
-        let html = '';
-        loto.forEach(lottery => {
-            html += `
-            <div class="li_col li_border li_p-2 li_text-center hover-yellow li_fw-bold">${lottery}</div>
-            `
-        })
-        container.html(html);
-    }
-    function renderLotoNumberStartOrEnd(data, id) {
-        const container = $(id);
-        let html = '';
-        for (let key in data) {
-            let loto = data[key];
-            html += `
-             <div class="li_row li_border">
-                <div class="li_col li_text-center li_border-end hover-yellow">${key}</div>
-                <div class="li_col-9 li_fw-bold hover-yellow">${loto.join(', ')}</div>
-            </div>
-            `
-        }
-        container.html(html);
-    }
-    function renderLotteryResults(result, id) {
-        const container = $(id)
-        let html = '';
-        if (Array.isArray(result)) {
-            result.forEach(lottery => {
-                html += `
-                        <div class="li_row  row-lottery">
-                            <div style="display:flex;justify-content:center;align-items:center;border-right:0px" class="li_col li_border li_p-2 li_fs-3  li_text-center ${lottery.prize == 0 ? 'li_text-red li_fw-bold' : ''}">
-                                ${lottery.name}
-                            </div>
-                            <div class="li_col-7  li_text-center">
-                                <div class="li_row" >
-                                    ${lottery.data.map(item => `
-                                        <div class="li_col hover-yellow li_fw-bold li_fs-4 li_p-2 m-0 li_border ${item.prize == 0 ? 'li_text-red li_fs-5' : ''} li_text-center">
-                                            ${item.prize_number}
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-            });
-        } else {
-            html += `
-                        <div class="li_row  row-lottery">
-                            <div style="display:flex;justify-content:center;align-items:center;border-right:0px" class="li_col li_border li_p-2 li_fs-3  li_text-center ${result['1'].prize == 0 ? 'li_text-red li_fw-bold' : ''}">
-                                ${result['1'].name}
-                            </div>
-                            <div class="li_col-7  li_text-center">
-                                <div class="li_row" >
-                                    ${result['1']?.data?.map(item => `
-                                        <div class="li_col hover-yellow li_fw-bold li_fs-4 li_p-2 m-0 li_border ${item.prize == 0 ? 'li_text-red li_fs-5' : ''} li_text-center">
-                                            ${item.prize_number}
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-        }
 
-        container.html(html);
-    }
+
+
+
+
 });
 

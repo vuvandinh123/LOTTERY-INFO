@@ -5,31 +5,23 @@ class Province_Handler
 
     private static $table = 'lottery_info_provinces';
     private static $url_api = 'https://ketqua365.net/api/region';
-    // Hàm tạo bảng lưu tỉnh thành
-    // public static function create_province_table()
-    // {
-    //     global $wpdb;
-    //     $table_name = $wpdb->prefix . self::$table;
-    //     $charset_collate = $wpdb->get_charset_collate();
+    static function fetch_province()
+    {
+        $response = wp_remote_get('https://ketqua365.net/api/provinces');
+        if (is_wp_error($response)) {
+            return [];
+        }
 
-    //     $sql = "CREATE TABLE $table_name (
-    //         id mediumint(9) NOT NULL AUTO_INCREMENT,
-    //         name varchar(255) NOT NULL,
-    //         slug varchar(255) NOT NULL,
-    //         alias varchar(255) NOT NULL,
-    //         weekdays_result_lottery varchar(1000) NOT NULL,
-    //         time time NOT NULL,
-    //         type varchar(50) NOT NULL,
-    //         status varchar(50) NOT NULL,
-    //         region_id mediumint(9) NOT NULL,
-    //         PRIMARY KEY (id)
-    //     ) $charset_collate;";
-
-    //     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    //     dbDelta($sql);
-    // }
-
-    // Hàm lấy danh sách tỉnh thành từ API và lưu vào CSDL
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+        $result = [];
+        foreach ($data['data'] as $item) {
+            $result[] = [
+                'slug' => $item['slug'],
+                'name' => $item['name']
+            ];
+        }
+        return $result ?? [];
+    }
     public static function fetch_provinces($slug = 'mien-nam')
     {
         $response = wp_remote_get(self::$url_api);
@@ -47,7 +39,17 @@ class Province_Handler
         }
         return $foundItem['provinces'] ?? [];
     }
-
+    public static function fetch_provinces_mien_bac()
+    {
+        $provinces = self::fetch_provinces('mien-bac');
+        $data = [];
+        foreach ($provinces as $province) {
+            if ($province['type'] !== 'normal') {
+                $data[] = $province;
+            }
+        }
+        return $data ?? [];
+    }
 
 
     // Hàm lấy dữ liệu tỉnh thành từ CSDL

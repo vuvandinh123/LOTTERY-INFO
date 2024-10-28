@@ -15,6 +15,7 @@ if (!function_exists('li_lottery_info_enqueue_assets')) {
             'flatpickr' => 'assets/js/flatpickr.js',
             'flatpickr_custom' => 'assets/js/flatpickr-custom.js',
             'function' => 'assets/js/function.js',
+            'render' => 'assets/js/fn-render.js',
             'main' => 'assets/js/lottery.main.js',
         ];
 

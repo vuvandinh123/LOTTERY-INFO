@@ -22,9 +22,7 @@ require_once LOTTERY_INFO_PATH . 'includes/class-province-handler.php';
 // Kích hoạt plugin.
 function lottery_info_activate()
 {
-    // Tạo bảng để lưu các tỉnh thành khi kích hoạt plugin.
-    // Province_Handler::create_province_table();
-    // Province_Handler::fetch_and_store_provinces();
+    // 
 }
 register_activation_hook(__FILE__, 'lottery_info_activate');
 
@@ -35,12 +33,12 @@ function lottery_api_call()
 {
     // Kiểm tra nonce để bảo mật
     check_ajax_referer('my_custom_nonce', 'nonce');
-    $region = isset($_POST['region']) ? sanitize_text_field($_POST['region']) : 'mien-bac'; // Mặc định là 'mien-bac'
+    $region = isset($_POST['region']) ? sanitize_text_field($_POST['region']) : 'mien-bac';
     $province = isset($_POST['province']) ? sanitize_text_field($_POST['province']) : '';
 
     $date = isset($_POST['date']) ? sanitize_text_field($_POST['date']) : '';
-
-    $payload = Lottery_API::prepare_response($region, $province, $date);
+    $lottery = new Lottery_API();
+    $payload = $lottery->prepare_response($region, $province, $date);
     wp_send_json_success($payload); // Trả về dữ liệu cho phía client
     wp_die(); // Dừng việc thực thi
 }
@@ -48,25 +46,48 @@ function lottery_api_call()
 function lottery_display_provinces($atts)
 {
     $atts = shortcode_atts([
-        'default' => 'mien-bac',
-        'title' => 'Kết quả xổ số truyền thống',
-        'loto_hidden' => 0,
-        'limit' => 3,
+        'default' => '',
+        'title' => '',
+        'province' => '',
+        'loto-hidden' => "0",
     ], $atts, 'lottery_info');
-    $title = sanitize_text_field($atts['title']);
+    $title = ($atts['title']);
     $default = sanitize_text_field($atts['default']);
-    $loto_hidden = (int) sanitize_text_field($atts['loto_hidden']);
-    if ($default !== 'mien-bac' && $default !== 'mien-nam' && $default !== 'mien-trung') {
+    $province = sanitize_text_field($atts['province']);
+    $loto_hidden = (int) sanitize_text_field($atts['loto-hidden']);
+    if ($default !== 'mien-bac' && $default !== 'mien-nam' && $default !== 'mien-trung' && $default !== 'Vietlott' && $province === '') {
         $default = 'mien-bac';
     }
     $provinces = [];
     if ($default !== 'mien-bac') {
         $provinces = Province_Handler::fetch_provinces($default);
+    } else if ($province === '') {
+        $provinces = Province_Handler::fetch_provinces_mien_bac();
     }
     $unique_id = uniqid();
     ob_start();
+    echo $title . "---------";
     require LOTTERY_INFO_PATH . 'templates/lottery-template.php';
     return ob_get_clean();
 }
 add_shortcode('lottery_info', 'lottery_display_provinces');
+
+// menu
+function lsg_shortcode_generator_page()
+{
+    include LOTTERY_INFO_PATH . 'templates/lottery-template-admin.php';
+}
+function lsg_add_admin_menu()
+{
+    add_menu_page(
+        'lottery_info',           // Tên menu item
+        'Thống Kê Xổ Số',           // Tên hiển thị
+        'manage_options',                // Quyền hạn
+        'lottery_info',           // Slug của menu
+        'lsg_shortcode_generator_page',  // Hàm callback để hiển thị trang
+        'dashicons-admin-generic',       // Icon
+        20                               // Thứ tự
+    );
+}
+add_action('admin_menu', 'lsg_add_admin_menu');
 

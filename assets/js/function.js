@@ -13,12 +13,13 @@ function formatDateString(dateString) {
     // Trả về định dạng mong muốn
     return `${dayOfWeek} ${day} - ${month} - ${year}`;
 }
+function formatNumber(number) {
+    return number.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+}
 function getPrizeNumberLottery(data) {
     if (!data || typeof data !== 'object') {
         return []
     }
-    console.log(data);
-
     const arr = data.map(item => item.prize_number_lotto);
     return arr
 }
