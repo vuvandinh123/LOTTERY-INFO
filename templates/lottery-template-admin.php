@@ -1,32 +1,59 @@
 <div class="wrap">
-    <h1>Shortcode Generator</h1>
-    <form id="shortcode-form">
-        <label for="type">Tiêu đề (Có thể trống)</label>
-        <input placeholder="Tiêu đề" type="text" id="li_title" name="li_title">
-        <label for="type">Loại hiển thị</label>
-        <select id="li_type" name="type">
-            <option value="province">Tỉnh / Thành phố</option>
-            <option value="default">Vùng miền</option>
-        </select>
-        <label for="li_value" id="li_lable_value">Tỉnh thành</label>
-        <select id="li_value" name="li_value">
-        </select>
-        <label for="li_loto">Hiển thị bảng loto</label>
-        <input type="checkbox" id="li_loto" name="li_loto">
-        <button type="button"
-            style="padding: 6px 10px;background-color: #0073aa;color: #fff;border: none;cursor: pointer;border-radius: 4px"
-            onclick="lsgGenerateShortcode()">Generate Shortcode</button>
+    <form id="li_lottery_form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
+        <input type="hidden" name="action" value="li_add_lottery_history">
+        <table class="form-table">
+            <tr>
+                <th><label for="li_title">
+                        Tiêu đề
+                    </label></th>
+                <td><input type="text" placeholder="Tiêu đề" style="width: 100%;" name="title" id="li_title" required>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="li_type">Loại hiển thị</label></th>
+                <td>
+                    <select id="li_type" style="width: 100%;max-width: 100%" name="type">
+                        <option value="province">Tỉnh / Thành phố</option>
+                        <option value="default">Vùng miền</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="li_value" style="text-transform: capitalize;" id="li_lable_value">Tỉnh thành</label>
+                </th>
+                <td>
+                    <select id="li_value" style="width: 100%;max-width: 100%" name="li_value">
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="li_loto">Hiển thị bảng loto</label></th>
+                <td><input type="checkbox" name="loto" id="li_loto"></td>
+            </tr>
+            <tr>
+                <th>
+                    <label for="generated-shortcode-input">
+                        Mã ngắn
+                    </label>
+                </th>
+                <td>
+                    <div style="display: flex;justify-content: center;align-items: center;">
+                        <input type="text" name="sortcode" readonly value="[lottery_info]"
+                            id="generated-shortcode-input" style="width: 100%;max-width: 100%;background-color: #fff">
+                        <button onclick="copyToClipboard()" type="button"
+                            style="background-color: #0073aa;color: #fff;border: none;cursor: pointer;padding: 6px 10px;border-radius: 4px"
+                            id="copy-button">Copy</button>
+                    </div>
+                    <p class="" style="margin-top: 5px;"><b>Note:</b> Bạn có thể không cần lưu mà vẫn có thể sử dụng bằng cách  coppy nội dung mã ngắn trên !!</p>
+                </td>
+            </tr>
+
+        </table>
+        <?php submit_button(__('Lưu sortcode mới', 'textdomain')); ?>
     </form>
     <p style="margin-top: 20px; font-weight: bold;">
-        <label for="generated-shortcode-input">
-            Mã ngắn
-        </label>
-        <input type="text" value="[lottery_info]" id="generated-shortcode-input" readonly
-            style="width: 500px;background-color: #fff">
-        <button onclick="copyToClipboard()"
-            style="background-color: #0073aa;color: #fff;border: none;cursor: pointer;padding: 6px 10px;border-radius: 4px"
-            id="copy-button">Copy</button>
-    <p><b>Cách sử dụng:</b> Bạn có thể chèn shortcode trực tiếp vào nội dung bài viết hoặc trang bằng cách thêm nó
+    <p><b>Cách sử dụng:</b> Bạn có thể chèn shortcode trực tiếp vào nội dung bài viết hoặc trang bằng cách thêm
+        nó
         vào trình soạn thảo văn
         bản. Ví dụ: [lottery_info default="mien-bac" ...v ].</p>
     </p>
@@ -250,13 +277,13 @@
     function renderRegion() {
         let data = [{
             slug: "mien-bac",
-            name: "Miền bắc"
+            name: "Miền Bắc"
         }, {
             slug: "mien-nam",
-            name: "Miền nam"
+            name: "Miền Nam"
         }, {
             slug: "mien-trung",
-            name: "Miền trung"
+            name: "Miền Trung"
         },
         {
             slug: "Vietlott",
@@ -279,13 +306,23 @@
             document.getElementById('li_lable_value').innerHTML = 'Vùng miền'
 
         }
+        lsgGenerateShortcode();
+    })
+    li_title.addEventListener('input', function () {
+        lsgGenerateShortcode();
+    })
+    li_value.addEventListener('change', function () {
+        lsgGenerateShortcode();
+    })
+    li_loto.addEventListener('change', function () {
+        lsgGenerateShortcode();
     })
     function lsgGenerateShortcode() {
-        let str_loto = `loto-hidden="1"`;
+        let str_loto = `loto-hidden='1'`;
         if (li_loto.checked) {
-            str_loto = `loto-hidden="0"`;
+            str_loto = `loto-hidden='0'`;
         }
-        const shortcode = `[lottery_info title="${li_title.value}"  ${li_type.value}="${li_value.value}" ${str_loto} ]`;
+        const shortcode = `[lottery_info title='${li_title.value}'  ${li_type.value}='${li_value.value}' ${str_loto} ]`;
         document.getElementById('generated-shortcode-input').value = shortcode;
     }
 </script>

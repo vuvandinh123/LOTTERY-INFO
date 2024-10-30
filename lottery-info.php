@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Thống Kê Xổ Số 2
+Plugin Name: Thống Kê Xổ Số
 Plugin URI: https://vuvandinh.id.vn
 Description: Thống kê xổ số theo tỉnh thành.
 Version: 1.1
@@ -8,21 +8,27 @@ Author: Vũ Văn Định
 Author URI: https://vuvandinh.id.vn
 License: GPL2
 */
-// Ngăn không cho truy cập trực tiếp
 if (!defined('ABSPATH')) {
     exit;
 }
 // Định nghĩa đường dẫn plugin.
 define('LOTTERY_INFO_PATH', plugin_dir_path(__FILE__));
 define('LOTTERY_INFO_URL', plugin_dir_url(__FILE__));
-
+// Lớp WP_List_Table tuỳ chỉnh
+if (!class_exists('WP_List_Table')) {
+    require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
+}
 require_once LOTTERY_INFO_PATH . 'includes/lottery-enqueue.php';
 require_once LOTTERY_INFO_PATH . 'includes/class-lottery-api.php';
 require_once LOTTERY_INFO_PATH . 'includes/class-province-handler.php';
+require_once LOTTERY_INFO_PATH . 'includes/class-add-table-lottery-history.php';
+include_once LOTTERY_INFO_PATH . 'includes/wp-form-add-data.php';
+include_once LOTTERY_INFO_PATH . 'includes/wp-list-lottery-data-list-table.php';
+include_once LOTTERY_INFO_PATH . 'includes/wp_add_sortcode_lottory_info.php';
 // Kích hoạt plugin.
 function lottery_info_activate()
 {
-    // 
+    Li_Table_Lottery_History::create_table();
 }
 register_activation_hook(__FILE__, 'lottery_info_activate');
 
@@ -42,41 +48,7 @@ function lottery_api_call()
     wp_send_json_success($payload); // Trả về dữ liệu cho phía client
     wp_die(); // Dừng việc thực thi
 }
-// Hàm lấy dữ liệu từ API
-function lottery_display_provinces($atts)
-{
-    $atts = shortcode_atts([
-        'default' => '',
-        'title' => '',
-        'province' => '',
-        'loto-hidden' => "0",
-    ], $atts, 'lottery_info');
-    $title = ($atts['title']);
-    $default = sanitize_text_field($atts['default']);
-    $province = sanitize_text_field($atts['province']);
-    $loto_hidden = (int) sanitize_text_field($atts['loto-hidden']);
-    if ($default !== 'mien-bac' && $default !== 'mien-nam' && $default !== 'mien-trung' && $default !== 'Vietlott' && $province === '') {
-        $default = 'mien-bac';
-    }
-    $provinces = [];
-    if ($default !== 'mien-bac') {
-        $provinces = Province_Handler::fetch_provinces($default);
-    } else if ($province === '') {
-        $provinces = Province_Handler::fetch_provinces_mien_bac();
-    }
-    $unique_id = uniqid();
-    ob_start();
-    echo $title . "---------";
-    require LOTTERY_INFO_PATH . 'templates/lottery-template.php';
-    return ob_get_clean();
-}
-add_shortcode('lottery_info', 'lottery_display_provinces');
-
 // menu
-function lsg_shortcode_generator_page()
-{
-    include LOTTERY_INFO_PATH . 'templates/lottery-template-admin.php';
-}
 function lsg_add_admin_menu()
 {
     add_menu_page(
@@ -84,10 +56,40 @@ function lsg_add_admin_menu()
         'Thống Kê Xổ Số',           // Tên hiển thị
         'manage_options',                // Quyền hạn
         'lottery_info',           // Slug của menu
-        'lsg_shortcode_generator_page',  // Hàm callback để hiển thị trang
+        'custom_admin_table_page',  // Hàm callback để hiển thị trang
         'dashicons-admin-generic',       // Icon
         20                               // Thứ tự
     );
 }
 add_action('admin_menu', 'lsg_add_admin_menu');
+
+
+
+// Hàm để hiển thị trang bảng dữ liệu
+function custom_admin_table_page()
+{
+    $add_data = new Li_form_add_data();
+    $table = new Lottery_Data_List_Table();
+    $table->prepare_items();
+
+    echo '<div class="wrap"><h1>Thống Kê Xổ Số</h1>';
+    if (isset($_GET['deleted']) && $_GET['deleted'] == 1) {
+        echo '<div class="notice notice-success"><p>Xóa thành công!</p></div>';
+    } else if (isset($_GET['success']) && $_GET['success'] == 1) {
+        echo '<div class="notice notice-success"><p>Thêm thành công!</p></div>';
+    }
+    ?>
+    <div class="li_content_generator_wrapper">
+        <div>
+            <?php $add_data->display_admin_page(); ?>
+        </div>
+        <div>
+            <form method="post">
+                <?php $table->display(); ?>
+            </form>
+        </div>
+    </div>
+    <?php // Khởi tạo bảng
+        echo '</div>';
+}
 

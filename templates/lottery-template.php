@@ -1,4 +1,4 @@
-<div class="li_border li_border-5 li_p-2 li_py-4" style="min-width: 300px;width: 700px;">
+<div class="li_border li_border-5 li_p-2 li_py-4" style="min-width: 300px;">
     <div id="outer_result_btr-<?= $unique_id ?>" class="lottery-info-shortcode" data-id="<?= $unique_id ?>">
         <div class="result_div" id="<?= "result_btr-" . $unique_id ?>" data-province="<?= $province ?>"
             data-type="<?= $default ?>">
