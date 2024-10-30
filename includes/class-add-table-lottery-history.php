@@ -12,11 +12,7 @@ class Li_Table_Lottery_History
         $sql = "CREATE TABLE $table_name (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             title VARCHAR(255) NULL,
-            province VARCHAR(100) NULL,
-            region VARCHAR(100) NULL,
-            sortcode VARCHAR(20) NOT NULL,
-            description TEXT NULL,
-            is_loto_table TINYINT(1) DEFAULT 0,
+            sortcode VARCHAR(200) NOT NULL,
             PRIMARY KEY (id)
         ) $charset_collate;";
 
