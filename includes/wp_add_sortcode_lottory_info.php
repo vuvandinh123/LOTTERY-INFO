@@ -17,7 +17,7 @@ function lottery_display_provinces(array $attributes): string
         $provinces = Province_Handler::fetch_provinces_mien_bac();
     }
 
-    $uniqueId = uniqid();
+    $unique_id = uniqid();
     ob_start();
     require_once LOTTERY_INFO_PATH . 'templates/lottery-template.php';
     return ob_get_clean();
